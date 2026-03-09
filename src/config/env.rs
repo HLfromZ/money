@@ -2,6 +2,8 @@ use std::env;
 use std::sync::OnceLock;
 
 pub struct Config {
+    pub run_mode: String,
+    pub log_level: String,
 }
 
 pub static CONFIG: OnceLock<Config> = OnceLock::new();
@@ -18,10 +20,16 @@ impl Config {
             println!("⚙️ 已载入环境文件 {}", env_file);
         }
 
+        let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());
+
         let config = Config {
+            run_mode,
+            log_level,
         };
 
-        if CONFIG.set(config).is_err() { eprintln!("❌ 配置已初始化") };
+        if CONFIG.set(config).is_err() {
+            eprintln!("❌ 配置已初始化")
+        };
     }
 
     pub fn get() -> &'static Config {
