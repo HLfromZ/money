@@ -4,6 +4,7 @@ use std::sync::OnceLock;
 pub struct Config {
     pub run_mode: String,
     pub log_level: String,
+    pub database_url: String,
 }
 
 pub static CONFIG: OnceLock<Config> = OnceLock::new();
@@ -21,10 +22,18 @@ impl Config {
         }
 
         let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());
+        let database_url = match env::var("DATABASE_URL") {
+            Ok(url) => url,
+            Err(_) => {
+                eprintln!("❌ DATABASE_URL is not set");
+                std::process::exit(1);
+            }
+        };
 
         let config = Config {
             run_mode,
             log_level,
+            database_url,
         };
 
         if CONFIG.set(config).is_err() {
