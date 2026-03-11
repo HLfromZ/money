@@ -11,13 +11,11 @@ async fn main() {
 
     info!("⚙️ 服务启动中, 环境 {}", config.run_mode);
 
-    let pool = match db::init_db(&config.database_url).await {
+    let _pool = match db::init_db(&config.database_url).await {
         Ok(pool) => pool,
         Err(e) => {
             error!("❌ 数据库初始化失败 {}", e);
             std::process::exit(-1);
         }
     };
-
-    loop {}
 }
