@@ -24,7 +24,20 @@ tokio = {
 
 sqlx = {
     version = "0.8.6",
-    features = ["sqlite", "runtime-tokio"],
+    features = ["sqlite", "runtime-tokio", "chrono"],
+}
+
+serde = {
+    version = "1.0.228",
+    features = ["derive"],
 }
 
 anyhow = "1.0.102"
+thiserror = "2.0.18"
+
+chrono = {
+    version = "0.4.44",
+    features = ["serde"],
+}
+
+async-trait = "0.1.89"
