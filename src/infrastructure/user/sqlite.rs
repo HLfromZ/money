@@ -79,7 +79,7 @@ impl UserRepository for SqliteUserRepository {
         )
         .bind(&user.username)
         .bind(&user.pwd_hash)
-        .bind(&user.user_id)
+        .bind(user.user_id)
         .execute(&self.pool)
         .await
         .map_err(|e| {
