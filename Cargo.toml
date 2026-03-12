@@ -41,3 +41,7 @@ chrono = {
 }
 
 async-trait = "0.1.89"
+
+axum = {
+    version = "0.8.8",
+}
