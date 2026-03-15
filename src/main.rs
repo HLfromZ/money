@@ -1,7 +1,8 @@
 use axum::Router;
 use money::config::env::Config;
 use money::config::{db, log};
-use tracing::{error, info};
+use money::{error_sys, info_conf};
+use tracing::info;
 
 #[tokio::main]
 async fn main() {
@@ -10,12 +11,12 @@ async fn main() {
 
     let _log_guard = log::init_log(&config.log_level);
 
-    info!("⚙️ 服务启动中, 环境 {}", config.run_mode);
+    info_conf!("服务启动中, 环境 {}", config.run_mode);
 
     let _pool = match db::init_db(&config.database_url).await {
         Ok(pool) => pool,
         Err(e) => {
-            error!("❌ 数据库初始化失败 {}", e);
+            error_sys!("数据库初始化失败 {}", e);
             std::process::exit(-1);
         }
     };
@@ -24,7 +25,7 @@ async fn main() {
     let listener = match tokio::net::TcpListener::bind(&addr).await {
         Ok(listener) => listener,
         Err(_) => {
-            error!("❌ 绑定端口失败");
+            error_sys!("绑定端口失败");
             std::process::exit(-1);
         }
     };

@@ -1,9 +1,9 @@
 use crate::domain::user::error::UserError;
 use crate::domain::user::model::entity::User;
 use crate::domain::user::repository::UserRepository;
+use crate::{error_db, info_db};
 use async_trait::async_trait;
 use sqlx::{Error, Pool, Sqlite};
-use tracing::{error, info};
 
 pub struct SqliteUserRepository {
     pool: Pool<Sqlite>,
@@ -47,7 +47,7 @@ impl UserRepository for SqliteUserRepository {
             .map_err(Self::map_err)
     }
 
-    async fn insert(&self, username: &str, pwd_hash: &str) -> Result<i64, UserError> {
+    async fn insert(&self, username: &str, pwd_hash: String) -> Result<i64, UserError> {
         let user_id: i64 = sqlx::query_scalar(
             r#"
             INSERT INTO user (username, pwd_hash)
@@ -60,12 +60,13 @@ impl UserRepository for SqliteUserRepository {
         .fetch_one(&self.pool)
         .await
         .map_err(|e| {
-            error!("user 插入 失败: {}", e);
+            error_db!("user 插入 失败: {}", e);
             Self::map_err(e)
         })?;
-        info!(
+        info_db!(
             "User inserted, user_id: {}, username: {}",
-            user_id, username
+            user_id,
+            username
         );
         Ok(user_id)
     }
@@ -83,12 +84,13 @@ impl UserRepository for SqliteUserRepository {
         .execute(&self.pool)
         .await
         .map_err(|e| {
-            error!("user 更新 失败");
+            error_db!("user 更新 失败");
             Self::map_err(e)
         })?;
-        info!(
+        info_db!(
             "User updated, user_id: {}, username: {}",
-            user.user_id, user.username
+            user.user_id,
+            user.username
         );
         Ok(())
     }
@@ -99,10 +101,10 @@ impl UserRepository for SqliteUserRepository {
             .execute(&self.pool)
             .await
             .map_err(|e| {
-                error!("user 删除 失败");
+                error_db!("user 删除 失败");
                 Self::map_err(e)
             })?;
-        info!("User deleted, user_id: {}", user_id);
+        info_db!("User deleted, user_id: {}", user_id);
         Ok(())
     }
 }

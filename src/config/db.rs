@@ -1,11 +1,11 @@
+use crate::info_db;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use sqlx::{Pool, Sqlite};
 use std::path::Path;
 use std::str::FromStr;
-use tracing::info;
 
 pub async fn init_db(database_url: &str) -> anyhow::Result<Pool<Sqlite>> {
-    info!("🗄️ 正在连接数据库...");
+    info_db!("正在连接数据库...");
 
     let file_path_str = database_url
         .strip_prefix("sqlite://")
@@ -17,7 +17,7 @@ pub async fn init_db(database_url: &str) -> anyhow::Result<Pool<Sqlite>> {
         && !parent_dir.as_os_str().is_empty()
         && !parent_dir.exists()
     {
-        info!("🗄️ 数据库目录不存在，开始创建...");
+        info_db!("数据库目录不存在，开始创建...");
         tokio::fs::create_dir_all(parent_dir).await?;
     }
 
@@ -30,7 +30,7 @@ pub async fn init_db(database_url: &str) -> anyhow::Result<Pool<Sqlite>> {
         .connect_with(options)
         .await?;
 
-    info!("🗄️ 数据库连接成功，检查数据库结构变更...");
+    info_db!("数据库连接成功，检查数据库结构变更...");
 
     let before_migration: Vec<i64> = sqlx::query_scalar("SELECT version FROM _sqlx_migrations")
         .fetch_all(&pool)
@@ -52,12 +52,12 @@ pub async fn init_db(database_url: &str) -> anyhow::Result<Pool<Sqlite>> {
         .collect();
 
     if new_migrations.is_empty() {
-        info!("🗄️ 数据库结构无变更");
+        info_db!("数据库结构无变更");
     } else {
-        info!("🗄️ 数据库升级: {:?}", new_migrations);
+        info_db!("数据库升级: {:?}", new_migrations);
     }
 
-    info!("🗄️ 数据库初始化完成");
+    info_db!("数据库初始化完成");
 
     Ok(pool)
 }
