@@ -1,5 +1,5 @@
-use money::config::env::Config;
 use money::config::db::init_db;
+use money::config::env::Config;
 use money::config::log::init_log;
 use sqlx::{Pool, Sqlite};
 use std::sync::Once;
