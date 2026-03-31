@@ -6,6 +6,7 @@ pub struct Config {
     pub log_level: String,
     pub database_url: String,
     pub server_port: u16,
+    pub url_prefix: String,
 }
 
 pub static CONFIG: OnceLock<Config> = OnceLock::new();
@@ -31,12 +32,14 @@ impl Config {
             }
         };
         let server_port = env::var("SERVER_PORT").unwrap_or_else(|_| "80".to_string());
+        let url_prefix = env::var("URL_PREFIX").unwrap_or_else(|_| "".to_string());
 
         let config = Config {
             run_mode,
             log_level,
             database_url,
             server_port: server_port.parse().unwrap(),
+            url_prefix,
         };
 
         if CONFIG.set(config).is_err() {

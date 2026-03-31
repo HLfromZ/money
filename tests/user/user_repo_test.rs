@@ -1,40 +1,31 @@
-use money::config::db::init_db;
-use money::config::log::init_log;
+use crate::{get_test_db_pool, info_test, init_test_log};
 use money::domain::user::model::entity::User;
 use money::domain::user::repository::UserRepository;
 use money::infrastructure::user::sqlite::SqliteUserRepository;
-use sqlx::{Pool, Sqlite};
 use std::time::Duration;
 use tokio::time::sleep;
-use tracing::info;
 
 pub static DATABASE_URL: &str = "sqlite://tests/db/money.db";
 
-async fn connect_db() -> Pool<Sqlite> {
-    init_db(DATABASE_URL)
-        .await
-        .expect("failed to create database")
-}
-
 #[tokio::test]
 async fn user_test() {
-    let _log_guard = init_log("debug");
-    let pool = connect_db().await;
+    init_test_log();
+    let pool = get_test_db_pool().await;
 
     let repo = SqliteUserRepository::new(pool);
 
-    let username = "test";
+    let username = "user_repo_test";
     let pwd_hash = "123";
 
-    let user_id = insert_test(username, pwd_hash, &repo).await;
-    info!("User inserted, user_id: {}", user_id);
+    let user_id = insert_test(username, pwd_hash.into(), &repo).await;
+    info_test!("User inserted, user_id: {}", user_id);
 
     let mut user = select_by_id_test(user_id, &repo).await.unwrap();
     let user_by_username = select_by_username_test(username, &repo).await.unwrap();
 
     assert_eq!(user.user_id, user_by_username.user_id);
 
-    info!("User found: {:?}", user);
+    info_test!("User found: {:?}", user);
 
     sleep(Duration::from_secs(3)).await;
 
@@ -46,14 +37,14 @@ async fn user_test() {
         .await
         .unwrap();
 
-    info!("User after update: {:?}", user_after_update);
+    info_test!("User after update: {:?}", user_after_update);
 
     delete_test(user_id, &repo).await;
     let user_after_delete = select_by_id_test(user_id, &repo).await;
-    info!("User after deletion: {:?}", user_after_delete);
+    info_test!("User after deletion: {:?}", user_after_delete);
 }
 
-async fn insert_test(username: &str, pwd_hash: &str, repo: &SqliteUserRepository) -> i64 {
+async fn insert_test(username: &str, pwd_hash: String, repo: &SqliteUserRepository) -> i64 {
     repo.insert(username, pwd_hash).await.unwrap()
 }
 
