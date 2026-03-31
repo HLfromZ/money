@@ -1,3 +1,4 @@
+use money::config::env::Config;
 use money::config::db::init_db;
 use money::config::log::init_log;
 use sqlx::{Pool, Sqlite};
@@ -7,6 +8,8 @@ use tokio::sync::OnceCell;
 pub mod user;
 
 static INIT: Once = Once::new();
+static CONFIG_INIT: Once = Once::new();
+static JWT_ENV_INIT: Once = Once::new();
 static DB_POOL: OnceCell<Pool<Sqlite>> = OnceCell::const_new();
 
 pub fn init_test_log() {
@@ -14,6 +17,18 @@ pub fn init_test_log() {
         let guard = init_log("info");
         std::mem::forget(guard);
     })
+}
+
+fn init_test_jwt_env() {
+    JWT_ENV_INIT.call_once(|| unsafe {
+        std::env::set_var("JWT_SECRET", "test-jwt-secret");
+        std::env::set_var("JWT_EXPIRE_SECOND", "3600");
+    });
+}
+
+pub fn init_test_config() {
+    init_test_jwt_env();
+    CONFIG_INIT.call_once(Config::init);
 }
 
 pub async fn get_test_db_pool() -> Pool<Sqlite> {

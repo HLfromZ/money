@@ -4,3 +4,4 @@ pub mod domain;
 pub mod infrastructure;
 pub mod macros;
 pub mod trigger;
+pub mod util;

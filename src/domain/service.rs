@@ -1,9 +1,11 @@
-use crate::api::user::dto::UserRegisterRequest;
+use crate::api::user::dto::{UserLoginRequest, UserRegisterRequest};
 use crate::domain::share::error::AppError;
 use crate::domain::user::error::UserError;
 use crate::domain::user::repository::UserRepository;
 use crate::error_sys;
-use argon2::{Argon2, PasswordHasher};
+use crate::util::jwt;
+use argon2::password_hash::Error;
+use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 use std::sync::Arc;
 use tracing::info;
 
@@ -34,5 +36,26 @@ impl UserService {
         info!("👏🏻 新用户 user_id: {}, username: {}", user_id, req.username);
 
         Ok(())
+    }
+
+    pub async fn login(&self, req: UserLoginRequest) -> Result<String, AppError> {
+        let user = self
+            .repo
+            .select_by_username(&req.username)
+            .await?
+            .ok_or(UserError::UsernamePasswordIncorrect)?;
+
+        Argon2::default()
+            .verify_password(req.password.as_bytes(), user.pwd_hash.as_str())
+            .map_err(|e| match e {
+                Error::PasswordInvalid => UserError::UsernamePasswordIncorrect.into(),
+                _ => {
+                    error_sys!("密码校验失败 {}", e);
+                    AppError::SystemError
+                }
+            })?;
+
+        let access_token = jwt::sign_access_token(user.user_id, &user.username)?;
+        Ok(access_token)
     }
 }
