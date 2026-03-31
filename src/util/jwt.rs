@@ -1,5 +1,5 @@
 use crate::config::env::Config;
-use crate::domain::share::dto::Claims;
+use crate::domain::share::auth::Claims;
 use crate::domain::share::error::AppError;
 use crate::error_sys;
 use chrono::{Duration, Utc};

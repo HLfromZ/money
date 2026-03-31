@@ -29,7 +29,7 @@ pub async fn login(
     Ok(Response::ok_data_msg(access_token, "登录成功"))
 }
 
-pub fn user_public_routes(url_prefix: &str, user_service: Arc<UserService>) -> Router {
+pub fn user_routes(url_prefix: &str, user_service: Arc<UserService>) -> Router {
     Router::new()
         .route(&format!("{}/user/register", url_prefix), post(register))
         .route(&format!("{}/user/login", url_prefix), post(login))
