@@ -4,3 +4,4 @@ Cargo.lock
 log
 devops/data
 tests/db
+.DS_Store
